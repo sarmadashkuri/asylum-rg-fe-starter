@@ -10,7 +10,7 @@ import YearLimitsSelect from './YearLimitsSelect';
 import ViewSelect from './ViewSelect';
 import axios from 'axios';
 import { resetVisualizationQuery } from '../../../state/actionCreators';
-import test_data from '../../../data/test_data.json';
+// import test_data from '../../../data/test_data.json';
 import { colors } from '../../../styles/data_vis_colors';
 import ScrollToTopOnMount from '../../../utils/scrollToTopOnMount';
 
@@ -50,7 +50,14 @@ function GraphWrapper(props) {
         break;
     }
   }
-  function updateStateWithNewData(years, view, office, stateSettingCallback) {
+  const updateStateWithNewData = async (
+    years,
+    view,
+    office,
+    stateSettingCallback
+  ) => {
+    console.log('update data');
+
     /*
           _                                                                             _
         |                                                                                 |
@@ -72,40 +79,101 @@ function GraphWrapper(props) {
                                    -- Mack 
     
     */
-
+    console.log(years);
     if (office === 'all' || !office) {
-      axios
-        .get(process.env.REACT_APP_API_URI, {
-          // mock URL, can be simply replaced by `${Real_Production_URL}/summary` in prod!
-          params: {
-            from: years[0],
-            to: years[1],
-          },
-        })
-        .then(result => {
-          stateSettingCallback(view, office, test_data); // <-- `test_data` here can be simply replaced by `result.data` in prod!
-        })
-        .catch(err => {
-          console.error(err);
-        });
+      try {
+        const response = await axios.get(
+          'https://hrf-asylum-be-b.herokuapp.com/cases/fiscalsummary',
+          {
+            // mock URL, can be simply replaced by `${Real_Production_URL}/summary` in prod!
+            params: {
+              from: years[0],
+              to: years[1],
+            },
+          }
+        );
+        const response2 = await axios.get(
+          'https://hrf-asylum-be-b.herokuapp.com/cases/citizenshipsummary',
+          {
+            // mock URL, can be simply replaced by `${Real_Production_URL}/summary` in prod!
+            params: {
+              from: years[0],
+              to: years[1],
+            },
+          }
+        );
+        const combinedData = [
+          { ...response.data, citizenshipResults: response2.data },
+        ];
+        console.log(combinedData);
+        stateSettingCallback(view, office, combinedData);
+      } catch (error) {
+        console.error(error);
+      }
+      // axios
+      //   .get("https://hrf-asylum-be-b.herokuapp.com/cases/fiscalsummary", {
+      //     // mock URL, can be simply replaced by `${Real_Production_URL}/summary` in prod!
+      //     params: {
+      //       from: years[0],
+      //       to: years[1],
+      //     },
+      //   })
+      //   .then(result => {
+      //     stateSettingCallback(view, office, test_data); // <-- `test_data` here can be simply replaced by `result.data` in prod!
+      //   })
+      //   .catch(err => {
+      //     console.error(err);
+      //   });
     } else {
-      axios
-        .get(process.env.REACT_APP_API_URI, {
-          // mock URL, can be simply replaced by `${Real_Production_URL}/summary` in prod!
-          params: {
-            from: years[0],
-            to: years[1],
-            office: office,
-          },
-        })
-        .then(result => {
-          stateSettingCallback(view, office, test_data); // <-- `test_data` here can be simply replaced by `result.data` in prod!
-        })
-        .catch(err => {
-          console.error(err);
-        });
+      try {
+        const response = await axios.get(
+          'https://hrf-asylum-be-b.herokuapp.com/cases/fiscalsummary',
+          {
+            // mock URL, can be simply replaced by `${Real_Production_URL}/summary` in prod!
+            params: {
+              from: years[0],
+              to: years[1],
+              office: office,
+            },
+          }
+        );
+        const response2 = await axios.get(
+          'https://hrf-asylum-be-b.herokuapp.com/cases/citizenshipsummary',
+          {
+            // mock URL, can be simply replaced by `${Real_Production_URL}/summary` in prod!
+            params: {
+              from: years[0],
+              to: years[1],
+              office: office,
+            },
+          }
+        );
+        const combinedData = [
+          { ...response.data, citizenshipResults: response2.data },
+        ];
+        console.log(combinedData);
+        stateSettingCallback(view, office, combinedData);
+      } catch (error) {
+        console.error(error);
+      }
+      // axios
+      //   .get("https://hrf-asylum-be-b.herokuapp.com/cases/fiscalsummary", {
+      //     // mock URL, can be simply replaced by `${Real_Production_URL}/summary` in prod!
+      //     params: {
+      //       from: years[0],
+      //       to: years[1],
+      //       office: office,
+      //     },
+      //   })
+      //   .then(result => {
+      //     console.log(result.data);
+      //     stateSettingCallback(view, office, test_data); // <-- `test_data` here can be simply replaced by `result.data` in prod!
+      //   })
+      //   .catch(err => {
+      //     console.error(err);
+      //   });
     }
-  }
+  };
   const clearQuery = (view, office) => {
     dispatch(resetVisualizationQuery(view, office));
   };
