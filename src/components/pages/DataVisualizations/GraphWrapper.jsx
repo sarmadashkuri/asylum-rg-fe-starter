@@ -56,8 +56,6 @@ function GraphWrapper(props) {
     office,
     stateSettingCallback
   ) => {
-    console.log('update data');
-
     /*
           _                                                                             _
         |                                                                                 |
@@ -79,7 +77,6 @@ function GraphWrapper(props) {
                                    -- Mack 
     
     */
-    console.log(years);
     if (office === 'all' || !office) {
       try {
         const response = await axios.get(
@@ -105,7 +102,7 @@ function GraphWrapper(props) {
         const combinedData = [
           { ...response.data, citizenshipResults: response2.data },
         ];
-        console.log(combinedData);
+        // console.log(combinedData);
         stateSettingCallback(view, office, combinedData);
       } catch (error) {
         console.error(error);
